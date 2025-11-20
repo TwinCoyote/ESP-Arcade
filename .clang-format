@@ -1,0 +1,50 @@
+---
+# Configuración básica, utilizando Google como estilo de base.
+# Esto establece muchas reglas por defecto (indentación, espaciado, etc.)
+BasedOnStyle: Google
+
+# --- Reglas de estilo modificadas ---
+
+# Longitud máxima de una línea antes de que clang-format intente dividirla.
+# El valor por defecto de Google (80) es a menudo demasiado restrictivo
+# para código moderno o pantallas grandes, 100 o 120 es común.
+ColumnLimit: 100
+
+# Siempre alinear los corchetes de apertura de las funciones,
+# estructuras, clases y bloques 'if', 'for', etc., en su propia línea.
+# Opciones comunes: Allman (Corchetes separados), Attach (Corchetes unidos),
+# Linux (Corchetes separados para funciones, unidos para bloques).
+# El valor 'Allman' es popular por su claridad.
+BreakBeforeBraces: Allman
+
+# Espaciado de punteros y referencias:
+# - Attach (adjuntar): int*p
+# - Detach (separar): int * p
+# - Both (ambos, el valor de Google): int* p
+PointerAlignment: Both
+
+# Espacio entre la palabra clave 'if', 'for', 'while', etc. y el paréntesis.
+# Insertar espacio: true (if (a))
+# Quitar espacio: false (if(a))
+SpaceBeforeParens: Never
+
+# Colocar los parámetros de una función en una nueva línea si la lista es demasiado larga.
+# Larga lista de parámetros envuelta en una nueva línea.
+BreakConstructorInitializersBeforeComma: true
+
+# Controla si los bloques 'else', 'catch', o 'while' deben estar en una nueva línea.
+# true: if (...) {...} \n else {...}
+BreakBeforeElse: true
+
+# Sangría para las etiquetas 'case' en la instrucción 'switch':
+# - 0: al mismo nivel que 'switch'
+# - 1: un nivel más sangrado que 'switch' (popular en muchos estilos)
+IndentCaseLabels: true
+
+# Sangría para clases/structs base:
+# True: class Foo : public Bar { ... } (sin sangría)
+# False (Google): class Foo : \n    public Bar { ... }
+DerivePointerAlignment: true
+
+---
+
