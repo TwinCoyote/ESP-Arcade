@@ -1,57 +1,38 @@
 #include <Arduino.h>
-#include <display.h>
-#include <assets.h>
-#include <inputs.h>
-#include <menu.h>
+#include "display.h"
+#include "assets.h"
+#include "inputs.h"
+#include "menu.h"
 
-unsigned long logoStartTime = 0;
-bool logoDisplayed = false; 
-bool menuDisplayed = false;
-
-Estado estadoActual = MENU;
+unsigned long logoTimer = 0;
+bool showingLogo = true;
 
 void setup() {
-  Serial.begin(9600);
+    Serial.begin(9600);
 
-  if(!display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_PANTALLA)) {
-    Serial.println(F("Fallo en la asignacion de SSD1306"));
-  }
-  InitButtons();
-  ClearDisplay();
-  logoStartTime = millis();
-  logoDisplayed = true;
+    InitDisplay();
+    InitButtons();
+    MenuInit();
+
+    // mostrar logo
+    DrawBitmap(Logo_R, logoWidth, logoHeight);
+    logoTimer = millis();
 }
 
 void loop() {
-  if (logoDisplayed && !menuDisplayed && (millis() - logoStartTime >= 2000)) {
-    ClearDisplay();
-    InitDisplay();
-    display.display();
-    menuDisplayed = true;
-  }
 
-  switch(estadoActual){
-    case MENU:
-      initMod();
-      menuCarrusel();
-      break;
+    // 1. mostrar logo por 2 segundos
+    if (showingLogo) {
+        if (millis() - logoTimer > 2000) {
+            showingLogo = false;
+            ClearDisplay();
+        }
+        return;
+    }
 
-    case Snake:
-      // TODO: ingresar el juego Snake
-      break;
+    // 2. actualización del menú
+    MenuUpdate();
 
-    case Tetris:
-      // TODO: ingresar el juego Tetris
-      break;
-
-    case Pong:
-      // TODO: ingresar el juego Pong
-      break;
-
-    case Config:
-      // TODO: ingresar configuración
-      break;     
-      
-  }
+    // 3. dibujar el menú
+    MenuRender();
 }
-

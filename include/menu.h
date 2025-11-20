@@ -1,20 +1,5 @@
-#ifndef MENU_H
-#define MENU_H
+#pragma once
 
-#include <Arduino.h>
-
-enum Estado {
-  MENU,
-  Snake,
-  Tetris,
-  Pong,
-  Config
-};
-
-extern Estado estadoActual;
-extern int indexMenu;
-
-void initMod();
-void menuCarrusel();
-
-#endif
+void MenuInit();        // inicializa variables del menú
+void MenuUpdate();      // lee botones y cambia index
+void MenuRender();      // dibuja la pantalla

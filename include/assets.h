@@ -7,4 +7,7 @@
 extern const unsigned char Logo_R[];
 extern const unsigned char menu_principal[];
 
+extern const int logoWidth;
+extern const int logoHeight;
+
 #endif 
