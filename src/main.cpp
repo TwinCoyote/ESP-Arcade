@@ -3,32 +3,42 @@
 #include "assets.h"
 #include "inputs.h"
 #include "menu.h"
+#include <iostream>
 
 unsigned long logoTimer = 0;
 bool showingLogo = true;
+unsigned long previusTime = 0;
+
+const char* options[] = {
+  "Snake",
+  "Pong",
+  "Tetris",
+  "Config"
+};
+
 
 void setup() {
     Serial.begin(9600);
-
     InitDisplay();
     InitButtons();
     MenuInit();
 
     // mostrar logo
     DrawBitmap(Logo_R, logoWidth, logoHeight);
-    logoTimer = millis();
-}
+    }
 
 void loop() {
-
-    // 1. mostrar logo por 2 segundos
+    unsigned long currentTime = millis();
     if (showingLogo) {
-        if (millis() - logoTimer > 2000) {
+        if (currentTime - previusTime>= 2000) {
             showingLogo = false;
             ClearDisplay();
+            previusTime = currentTime; 
         }
         return;
     }
+
+
 
     // 2. actualización del menú
     MenuUpdate();

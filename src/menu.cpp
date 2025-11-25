@@ -1,6 +1,7 @@
 #include "menu.h"
 #include "display.h"
 #include "inputs.h"
+#include "assets.h"
 
 const char* options[] = {
   "Snake",
@@ -35,3 +36,5 @@ void MenuRender() {
     display.print(options[indexMenu]);
     display.display();
 }
+
+
