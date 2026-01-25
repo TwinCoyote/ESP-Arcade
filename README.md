@@ -1,6 +1,6 @@
 # 🎮 Mini Consola Retro ESP32
 
-**Autor:** [Tu nombre aquí]  
+**Autor:** Ruben R  
 **Versión:** 0.1  
 **Plataforma:** ESP32 (DOIT ESP32 DEVKIT V1)  
 **Framework:** Arduino (PlatformIO)
