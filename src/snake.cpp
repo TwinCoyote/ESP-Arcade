@@ -1,83 +1,134 @@
-#include <cstdlib>
-#include "display.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-struct point{
-    int x;
-    int y;
-};
+#define ANCHO_PANTALLA 128
+#define ALTO_PANTALLA 64
+#define DIRECCION_OLED 0x3C
 
-point snakeLimit[64];
-int snakeLength =3;
-// Limites
-const int ScreenWidth =127;
-const int ScreenHeight =63;
+Adafruit_SSD1306 display(ANCHO_PANTALLA,ALTO_PANTALLA,&Wire,-1);
 
-enum Direction {UP, DOWN, LEFT, RIGHT};
-Direction dir = RIGHT;
+int direccion = 0;
 
-point food;
+const int botonArriba     = 2;
+const int botonAbajo      = 19;
+const int botonDerecha    = 4;
+const int botonIzquierda  = 16;
 
-void RandomFood(){
-    food.x = random() % ScreenWidth;
-    food.y = random() % ScreenHeight;
-}
+int x = 0;   // posición X
+int y = 0;   // posición Y
+int largo = 3;
 
-void PrintFood(){
-    display.drawPixel(food.x, food.y, 1);
-}
+int rans = 40;
+int ran  = 30;
 
-void SnakeInit(){
-dir = RIGHT; 
-int StartX = 64;
-int StartY = 32;
+int comidaX = 0;
+int comidaY = 0;
 
-snakeLimit[0] = {StartX, StartY};
-snakeLimit[1] = {StartX-1, StartY};
-snakeLimit[2] = {StartX-2, StartY};
+const int len_block = 3;
 
-}
-
-
-void MoveUpdate(){
-    
-
-    for (int i = snakeLength - 1; i > 0; i--){
-        snakeLimit[i] = snakeLimit[i-1]; 
-    // Movimiento del cuerops de la serpiente
+void setup() {
+    if (!display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_OLED)) {
+        Serial.println(F("Error en la asignación de SSD1306"));
+        for (;;);
     }
 
-    switch(dir){//Movimiento de la cabeza
-        case UP: snakeLimit[0].y--;
-        break;
-        case DOWN: snakeLimit[0].y++;
-        break;
-        case LEFT: snakeLimit[0].x--;
-        break;
-        case RIGHT: snakeLimit[0].x++;
-        break;
-    }
-    display.display();
-// En vez de borrar cada pixel, es ams eficiente limpiar
-//toda la pantalla
-}
-
-
-void PrintSnake(){
-    for(int i = 0; i < snakeLength; i++){
-        display.drawPixel(snakeLimit[i].x, snakeLimit[i].y,1);
-    }
-}
-
-
-//Aqui empieza el motot del juego.
-
-void SnakeUpdate(){
-    MoveUpdate();
-}
-
-void SnakeRender(){
     display.clearDisplay();
-    PrintSnake();
-    PrintFood();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("Iniciado");
     display.display();
+
+    pinMode(botonArriba, INPUT_PULLUP);
+    pinMode(botonAbajo, INPUT_PULLUP);
+    pinMode(botonDerecha, INPUT_PULLUP);
+    pinMode(botonIzquierda, INPUT_PULLUP);
+}
+
+void snake_move(int move_x, int move_y) {
+  if (digitalRead(botonDerecha) == LOW){
+    for(int i; i<largo; i++){
+      display.fillRect(move_x-i, move_y, 3, 3, SSD1306_WHITE);
+    }
+  }
+
+  if(digitalRead(botonIzquierda) == LOW){
+    for(int i; i<largo; i++){
+      display.fillRect(move_x+i,move_y,3, 3, SSD1306_WHITE);
+    }
+  }
+
+  if(digitalRead(botonArriba) == LOW){
+    for(int i; i<largo; i++){
+      display.fillRect(move_x,move_y+i,3, 3, SSD1306_WHITE);
+    }
+  }
+
+  if(digitalRead(botonAbajo) == LOW){
+    for(int i; i<largo; i++){
+      display.fillRect(move_x,move_y-i,3, 3, SSD1306_WHITE);
+    }
+  }
+  // display.fillRect(move_x-2, move_y, 3, 3, SSD1306_WHITE);
+  // display.fillRect(move_x-1, move_y, 3, 3, SSD1306_WHITE);
+  // display.fillRect(move_x, move_y, 3, 3, SSD1306_WHITE);
+}
+
+void random_food() {
+    comidaX = random(0, 42) * len_block;
+    comidaY = random(0, 21) * len_block;
+
+    display.display();
+    display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+}
+
+void check_food() {
+    if (x == comidaX && y == comidaY) {
+        random_food();
+        largo++;
+    }
+}
+
+void move() {
+    if (digitalRead(botonArriba) == LOW) {
+        direccion = 2;
+    }
+    if (digitalRead(botonAbajo) == LOW) {
+        direccion = 19;
+    }
+    if (digitalRead(botonDerecha) == LOW) {
+        direccion = 4;
+    }
+    if (digitalRead(botonIzquierda) == LOW) {
+        direccion = 16;
+    }
+
+    display.display();
+
+    if (direccion == 2) {
+        y = y - 1;          // Arriba
+    } else if (direccion == 19) {
+        y = y + 1;          // Abajo
+    } else if (direccion == 4) {
+        x = x + 1;          // Derecha
+    } else if (direccion == 16) {
+        x = x - 1;          // Izquierda
+    }
+
+    display.fillRect(x, y, largo, 3, SSD1306_WHITE);
+    display.display();
+}
+
+void loop() {
+    display.clearDisplay();
+
+    check_food();
+    display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+
+    move();
+    snake_move(x, y);
+
+    display.display();
+    delay(100);
 }
