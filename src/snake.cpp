@@ -5,10 +5,13 @@
 #define ANCHO_PANTALLA 128
 #define ALTO_PANTALLA 64
 #define DIRECCION_OLED 0x3C
+#define LONGITUD_MAXIMA 50
+
+
 
 Adafruit_SSD1306 display(ANCHO_PANTALLA,ALTO_PANTALLA,&Wire,-1);
 
-int direccion = 0;
+int direccion = 5;
 
 const int botonArriba     = 2;
 const int botonAbajo      = 19;
@@ -18,6 +21,10 @@ const int botonIzquierda  = 16;
 int x = 0;   // posición X
 int y = 0;   // posición Y
 int largo = 3;
+
+int snake_x[LONGITUD_MAXIMA];
+int snake_y[LONGITUD_MAXIMA];
+
 
 int rans = 40;
 int ran  = 30;
@@ -37,42 +44,28 @@ void setup() {
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
-    display.println("Iniciado");
+    display.println("Iniciado Juego Snake");
+    delay(100);
+    display.print("3");
+    delay(50);
+    display.print("2");
+    delay(50);
+    display.print("1");
     display.display();
 
     pinMode(botonArriba, INPUT_PULLUP);
     pinMode(botonAbajo, INPUT_PULLUP);
     pinMode(botonDerecha, INPUT_PULLUP);
     pinMode(botonIzquierda, INPUT_PULLUP);
-}
 
-void snake_move(int move_x, int move_y) {
-  if (digitalRead(botonDerecha) == LOW){
-    for(int i; i<largo; i++){
-      display.fillRect(move_x-i, move_y, 3, 3, SSD1306_WHITE);
-    }
-  }
+    snake_x[0] = 10;
+    snake_y[0] = 10;
 
-  if(digitalRead(botonIzquierda) == LOW){
-    for(int i; i<largo; i++){
-      display.fillRect(move_x+i,move_y,3, 3, SSD1306_WHITE);
+    for (int i = 1; i < largo; i++) {
+        snake_x[i] = snake_x[0] - i * len_block;
+        snake_y[i] = snake_y[0];
     }
-  }
 
-  if(digitalRead(botonArriba) == LOW){
-    for(int i; i<largo; i++){
-      display.fillRect(move_x,move_y+i,3, 3, SSD1306_WHITE);
-    }
-  }
-
-  if(digitalRead(botonAbajo) == LOW){
-    for(int i; i<largo; i++){
-      display.fillRect(move_x,move_y-i,3, 3, SSD1306_WHITE);
-    }
-  }
-  // display.fillRect(move_x-2, move_y, 3, 3, SSD1306_WHITE);
-  // display.fillRect(move_x-1, move_y, 3, 3, SSD1306_WHITE);
-  // display.fillRect(move_x, move_y, 3, 3, SSD1306_WHITE);
 }
 
 void random_food() {
@@ -90,45 +83,82 @@ void check_food() {
     }
 }
 
-void move() {
+void direcciones(){
+    if (direccion == 0) snake_y[0] -= len_block;
+    if (direccion == 1) snake_y[0] += len_block;
+    if (direccion == 2) snake_x[0] += len_block;
+    if (direccion == 3) snake_x[0] -= len_block;
+}
+
+// void buttons_read() {
+//     if (digitalRead(botonArriba) == LOW) {
+//         direccion = 2;
+//     }
+//     if (digitalRead(botonAbajo) == LOW) {
+//         direccion = 19;
+//     }
+//     if (digitalRead(botonDerecha) == LOW) {
+//         direccion = 4;
+//     }
+//     if (digitalRead(botonIzquierda) == LOW) {
+//         direccion = 16;
+//     }
+
+// }
+
+void buttons_read() {
     if (digitalRead(botonArriba) == LOW) {
+        direccion = 0;
+    } else if (digitalRead(botonAbajo) == LOW) {
+        direccion = 1;
+    } else if (digitalRead(botonDerecha) == LOW) {
         direccion = 2;
+    } else if (digitalRead(botonIzquierda) == LOW) {
+        direccion = 3;
     }
-    if (digitalRead(botonAbajo) == LOW) {
-        direccion = 19;
-    }
-    if (digitalRead(botonDerecha) == LOW) {
-        direccion = 4;
-    }
-    if (digitalRead(botonIzquierda) == LOW) {
-        direccion = 16;
-    }
+}
 
-    display.display();
 
-    if (direccion == 2) {
-        y = y - 1;          // Arriba
-    } else if (direccion == 19) {
-        y = y + 1;          // Abajo
-    } else if (direccion == 4) {
-        x = x + 1;          // Derecha
-    } else if (direccion == 16) {
-        x = x - 1;          // Izquierda
+void print_head() {
+    for (int i =0; i < largo; i++){
+      display.fillRect(snake_x[i], snake_y[i], len_block, len_block, SSD1306_WHITE);
     }
+    
+}
 
-    display.fillRect(x, y, largo, 3, SSD1306_WHITE);
-    display.display();
+// Funcion Beta para el recorrimiento de las cordenadas; la intencion es que se pueda usar tanto con
+//  las cordenadas en x como en las de y
+
+void body(){
+  for(int i= largo-1;i > 0; i--){
+    snake_x[i] = snake_x[i-1];
+    snake_y[i] = snake_y[i-1];
+  }
+}
+
+void beta(){
+  for (int i = 0; i < largo; i++) {
+  Serial.print("Segmento ");
+  Serial.print(i);
+  Serial.print(": X=");
+  Serial.print(snake_x[i]);
+  Serial.print(" Y=");
+  Serial.println(snake_y[i]);
+}
+Serial.println("----");
+
 }
 
 void loop() {
     display.clearDisplay();
-
-    check_food();
-    display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
-
-    move();
-    snake_move(x, y);
+    body();
+    // Serial.println(snake_x);
+    // beta();
+    buttons_read();
+    direcciones();
+    print_head();
 
     display.display();
-    delay(100);
+    delay(120);
 }
+
