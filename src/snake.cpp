@@ -11,19 +11,21 @@
 
 Adafruit_SSD1306 display(ANCHO_PANTALLA,ALTO_PANTALLA,&Wire,-1);
 
-int direccion = 5;
+int direccion = 1;
 
 const int botonArriba     = 2;
 const int botonAbajo      = 19;
 const int botonDerecha    = 4;
 const int botonIzquierda  = 16;
+const int botonSelect = 5;
 
 // int x = 0;   // posición X
 // int y = 0;   // posición Y
-int largo = 3;
+int largo = 20;
 
 int snake_x[LONGITUD_MAXIMA];
 int snake_y[LONGITUD_MAXIMA];
+int is_alive = true;
 
 
 int rans = 40;
@@ -57,6 +59,7 @@ void setup() {
     pinMode(botonAbajo, INPUT_PULLUP);
     pinMode(botonDerecha, INPUT_PULLUP);
     pinMode(botonIzquierda, INPUT_PULLUP);
+    pinMode(botonSelect, INPUT_PULLUP);
 
     snake_x[0] = 8;//9
     snake_y[0] = 8;//9
@@ -68,19 +71,30 @@ void setup() {
 
 }
 
-// void random_food() {
-//     // comidaX = random(0, 32) * len_block; //42
-//     // comidaY = random(0, 16) * len_block; //21
+void random_food() {
+    comidaX = random(0, 32) * len_block; //42
+    comidaY = random(0, 16) * len_block; //21
 
-//     display.display();
-//     // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
-// }
+    display.display();
+    // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+}
 
 void check_food() {
     display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
     if (snake_x[0] == comidaX && snake_y[0] == comidaY) {
-        // random_food();
-        largo = largo + 1;
+        random_food();
+        if(largo < LONGITUD_MAXIMA){
+          largo = largo + 1;
+        }
+        else{
+          display.clearDisplay();
+          display.setTextSize(1);
+          display.setTextColor(SSD1306_WHITE);
+          display.setCursor(0, 0);
+          display.println("Has Ganado!");
+          is_alive = false;
+        }
+        
     }
 }
 
@@ -89,6 +103,7 @@ void direcciones(){
     if (direccion == 1) snake_y[0] += len_block;
     if (direccion == 2) snake_x[0] += len_block;
     if (direccion == 3) snake_x[0] -= len_block;
+    if (direccion == 4) is_alive = false;
 }
 
 // void buttons_read() {
@@ -116,30 +131,30 @@ void buttons_read() {
         direccion = 2;
     } else if (digitalRead(botonIzquierda) == LOW) {
         direccion = 3;
-    }
+    } else if (digitalRead(botonSelect) == LOW) {
+        direccion = 4;
+  }
 }
 
-void space_limits(){
-  if (snake_x[0] == 124){
+void space_limits() {
+  if (snake_x[0] >= ANCHO_PANTALLA) {
     snake_x[0] = 0;
+  } 
+  else if (snake_x[0] < 0) {
+    snake_x[0] = ANCHO_PANTALLA - len_block;
   }
 
-  else if (snake_x[0] == 0){
-    snake_x[0] = 124;
-  }
-
-  if (snake_y[0] == 60){
+  if (snake_y[0] >= ALTO_PANTALLA) {
     snake_y[0] = 0;
-  }
-  
-  else if (snake_y[0] == 0){
-    snake_y[0] = 60;
+  } 
+  else if (snake_y[0] < 0) {
+    snake_y[0] = ALTO_PANTALLA - len_block;
   }
 }
 
 void print_snake() {
     for (int i =0; i < largo; i++){
-      space_limits();
+      
       display.fillRect(snake_x[i], snake_y[i], len_block, len_block, SSD1306_WHITE);
     }
     
@@ -167,19 +182,44 @@ void beta(){
 Serial.println("----");
 }
 
+
+
+void lose_conditions(){
+  for(int i=1; i<largo; i++){
+    if (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]){
+      display.clearDisplay();
+      display.setTextSize(1);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(0, 0);
+      display.println("Has perdido!");
+      is_alive = false;
+    }
+  }
+}
+
+
+
+
 void loop() {
-    display.clearDisplay();
-    body();
-    // Serial.println(snake_x);
-    // beta();
-    buttons_read();
-    direcciones();
-    print_snake();
+  
+  while (is_alive){
+      display.clearDisplay();
+      buttons_read();
+      body();
+      direcciones();
+      
+      // Serial.println(snake_x);
+      // beta();
+      
+      space_limits();
+      lose_conditions();
+      print_snake();
 
-    check_food();
-    // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+      check_food();
+      // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
 
-    display.display();
-    delay(120);
+      display.display();
+      delay(120);
+  }
 }
 
