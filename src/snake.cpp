@@ -18,8 +18,8 @@ const int botonAbajo      = 19;
 const int botonDerecha    = 4;
 const int botonIzquierda  = 16;
 
-int x = 0;   // posición X
-int y = 0;   // posición Y
+// int x = 0;   // posición X
+// int y = 0;   // posición Y
 int largo = 3;
 
 int snake_x[LONGITUD_MAXIMA];
@@ -28,11 +28,11 @@ int snake_y[LONGITUD_MAXIMA];
 
 int rans = 40;
 int ran  = 30;
+const int len_block = 4; //3
+int comidaX = random(0, 32) * len_block; //42
+int comidaY = random(0, 16) * len_block; //21
 
-int comidaX = 0;
-int comidaY = 0;
 
-const int len_block = 3;
 
 void setup() {
     if (!display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_OLED)) {
@@ -58,8 +58,8 @@ void setup() {
     pinMode(botonDerecha, INPUT_PULLUP);
     pinMode(botonIzquierda, INPUT_PULLUP);
 
-    snake_x[0] = 10;
-    snake_y[0] = 10;
+    snake_x[0] = 8;//9
+    snake_y[0] = 8;//9
 
     for (int i = 1; i < largo; i++) {
         snake_x[i] = snake_x[0] - i * len_block;
@@ -68,18 +68,19 @@ void setup() {
 
 }
 
-void random_food() {
-    comidaX = random(0, 42) * len_block;
-    comidaY = random(0, 21) * len_block;
+// void random_food() {
+//     // comidaX = random(0, 32) * len_block; //42
+//     // comidaY = random(0, 16) * len_block; //21
 
-    display.display();
-    display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
-}
+//     display.display();
+//     // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+// }
 
 void check_food() {
-    if (x == comidaX && y == comidaY) {
-        random_food();
-        largo++;
+    display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+    if (snake_x[0] == comidaX && snake_y[0] == comidaY) {
+        // random_food();
+        largo = largo + 1;
     }
 }
 
@@ -118,9 +119,27 @@ void buttons_read() {
     }
 }
 
+void space_limits(){
+  if (snake_x[0] == 124){
+    snake_x[0] = 0;
+  }
 
-void print_head() {
+  else if (snake_x[0] == 0){
+    snake_x[0] = 124;
+  }
+
+  if (snake_y[0] == 60){
+    snake_y[0] = 0;
+  }
+  
+  else if (snake_y[0] == 0){
+    snake_y[0] = 60;
+  }
+}
+
+void print_snake() {
     for (int i =0; i < largo; i++){
+      space_limits();
       display.fillRect(snake_x[i], snake_y[i], len_block, len_block, SSD1306_WHITE);
     }
     
@@ -146,7 +165,6 @@ void beta(){
   Serial.println(snake_y[i]);
 }
 Serial.println("----");
-
 }
 
 void loop() {
@@ -156,7 +174,10 @@ void loop() {
     // beta();
     buttons_read();
     direcciones();
-    print_head();
+    print_snake();
+
+    check_food();
+    // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
 
     display.display();
     delay(120);
