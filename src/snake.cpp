@@ -103,7 +103,6 @@ void direcciones(){
     if (direccion == 1) snake_y[0] += len_block;
     if (direccion == 2) snake_x[0] += len_block;
     if (direccion == 3) snake_x[0] -= len_block;
-    if (direccion == 4) is_alive = false;
 }
 
 // void buttons_read() {
@@ -131,9 +130,7 @@ void buttons_read() {
         direccion = 2;
     } else if (digitalRead(botonIzquierda) == LOW) {
         direccion = 3;
-    } else if (digitalRead(botonSelect) == LOW) {
-        direccion = 4;
-  }
+    } 
 }
 
 void space_limits() {
@@ -193,33 +190,58 @@ void lose_conditions(){
       display.setCursor(0, 0);
       display.println("Has perdido!");
       is_alive = false;
+
+      
     }
   }
 }
 
+void reset_game() {
+    largo = 3;
+    direccion = 1;
+    is_alive = true;
+    // reset_request = false;
+
+    snake_x[0] = 8;
+    snake_y[0] = 8;
+
+    for (int i = 1; i < largo; i++) {
+        snake_x[i] = snake_x[0] - i * len_block;
+        snake_y[i] = snake_y[0];
+    }
+
+    random_food();
+}
 
 
 
 void loop() {
-  
-  while (is_alive){
-      display.clearDisplay();
-      buttons_read();
-      body();
-      direcciones();
-      
-      // Serial.println(snake_x);
-      // beta();
-      
-      space_limits();
-      lose_conditions();
-      print_snake();
 
-      check_food();
-      // display.fillRect(comidaX, comidaY, 3, 3, SSD1306_WHITE);
+    if (!is_alive) {
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.println("Game Over");
+        display.println("Press SELECT");
+        display.display();
 
-      display.display();
-      delay(120);
-  }
+        if (digitalRead(botonSelect) == LOW) {
+            delay(300); 
+            reset_game();
+        }
+        return;
+    }
+
+    display.clearDisplay();
+
+    buttons_read();
+    body();           
+    direcciones();    
+    space_limits();
+    lose_conditions();
+    print_snake();
+    check_food();
+
+    display.display();
+    delay(120);
+
 }
-
