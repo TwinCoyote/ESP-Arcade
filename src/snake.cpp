@@ -7,6 +7,8 @@
 #define DIRECCION_OLED 0x3C
 #define LONGITUD_MAXIMA 50
 
+const unsigned long eventInterval = 1000;
+unsigned long previousTime = 0;
 
 
 Adafruit_SSD1306 display(ANCHO_PANTALLA,ALTO_PANTALLA,&Wire,-1);
@@ -17,7 +19,17 @@ const int botonArriba     = 2;
 const int botonAbajo      = 19;
 const int botonDerecha    = 4;
 const int botonIzquierda  = 16;
-const int botonSelect = 5;
+const int botonSelect     = 5;
+
+
+enum class states{
+  INIT,
+  START,
+  GAME_OVER,
+  AGAIN
+};
+
+states ACTUAL_STATE = states::INIT;
 
 // int x = 0;   // posición X
 // int y = 0;   // posición Y
@@ -25,7 +37,7 @@ int largo = 20;
 
 int snake_x[LONGITUD_MAXIMA];
 int snake_y[LONGITUD_MAXIMA];
-int is_alive = true;
+// int is_alive = true;
 
 
 int rans = 40;
@@ -35,25 +47,24 @@ int comidaX = random(0, 32) * len_block; //42
 int comidaY = random(0, 16) * len_block; //21
 
 
+// void better_delay(){
+//   unsigned long currentTime = millis();
+//   if(currentTime - PreviousTime >= eventInterval){
+//     PreviousTime = currentTime;
+//   }
+  
+// }
+
+
 
 void setup() {
+  Serial.begin(9600);
     if (!display.begin(SSD1306_SWITCHCAPVCC, DIRECCION_OLED)) {
         Serial.println(F("Error en la asignación de SSD1306"));
         for (;;);
     }
 
     display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(SSD1306_WHITE);
-    display.setCursor(0, 0);
-    display.println("Iniciado Juego Snake");
-    delay(100);
-    display.print("3");
-    delay(50);
-    display.print("2");
-    delay(50);
-    display.print("1");
-    display.display();
 
     pinMode(botonArriba, INPUT_PULLUP);
     pinMode(botonAbajo, INPUT_PULLUP);
@@ -69,6 +80,25 @@ void setup() {
         snake_y[i] = snake_y[0];
     }
 
+}
+
+void game_letters(){
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("Iniciado Juego Snake");
+    delay(100);
+    display.display();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(15, 20);
+    display.println("Presiona Start!");
+    display.display();
+
+    if(digitalRead(botonSelect)==LOW){
+      ACTUAL_STATE = states::START;
+    }
 }
 
 void random_food() {
@@ -92,7 +122,7 @@ void check_food() {
           display.setTextColor(SSD1306_WHITE);
           display.setCursor(0, 0);
           display.println("Has Ganado!");
-          is_alive = false;
+          // is_alive = false;
         }
         
     }
@@ -130,8 +160,10 @@ void buttons_read() {
         direccion = 2;
     } else if (digitalRead(botonIzquierda) == LOW) {
         direccion = 3;
-    } 
-}
+    } else if (digitalRead(botonSelect) == LOW) {
+        
+    }
+  }
 
 void space_limits() {
   if (snake_x[0] >= ANCHO_PANTALLA) {
@@ -167,81 +199,90 @@ void body(){
   }
 }
 
-void beta(){
-  for (int i = 0; i < largo; i++) {
-  Serial.print("Segmento ");
-  Serial.print(i);
-  Serial.print(": X=");
-  Serial.print(snake_x[i]);
-  Serial.print(" Y=");
-  Serial.println(snake_y[i]);
-}
-Serial.println("----");
-}
+// void beta(){
+//   for (int i = 0; i < largo; i++) {
+//   Serial.print("Segmento ");
+//   Serial.print(i);
+//   Serial.print(": X=");
+//   Serial.print(snake_x[i]);
+//   Serial.print(" Y=");
+//   Serial.println(snake_y[i]);
+// }
+// Serial.println("----");
+// }
 
 
 
 void lose_conditions(){
   for(int i=1; i<largo; i++){
     if (snake_x[0] == snake_x[i] && snake_y[0] == snake_y[i]){
-      display.clearDisplay();
-      display.setTextSize(1);
-      display.setTextColor(SSD1306_WHITE);
-      display.setCursor(0, 0);
-      display.println("Has perdido!");
-      is_alive = false;
-
       
+      ACTUAL_STATE = states::GAME_OVER;
+      return;
     }
   }
 }
 
-void reset_game() {
-    largo = 3;
-    direccion = 1;
-    is_alive = true;
-    // reset_request = false;
-
-    snake_x[0] = 8;
-    snake_y[0] = 8;
-
-    for (int i = 1; i < largo; i++) {
-        snake_x[i] = snake_x[0] - i * len_block;
-        snake_y[i] = snake_y[0];
-    }
-
-    random_food();
+void lose_display(){
+      display.display();
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(4, 0);
+      display.println("Game Over!");
+      display.display();
+      display.setTextSize(1);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(15, 20);
+      display.println("Volver a jugar?");
+ 
 }
 
+void reset_game() {
+  largo = 3;
+  direccion = 1;
+
+  snake_x[0] = 8;
+  snake_y[0] = 8;
+
+  for (int i = 1; i < largo; i++) {
+    snake_x[i] = snake_x[0] - i * len_block;
+    snake_y[i] = snake_y[0];
+  }
+
+  random_food();
+  ACTUAL_STATE = states::START;
+}
 
 
 void loop() {
+  if(ACTUAL_STATE == states::INIT){
+    game_letters();
+  }
 
-    if (!is_alive) {
-        display.clearDisplay();
-        display.setCursor(0, 0);
-        display.println("Game Over");
-        display.println("Press SELECT");
-        display.display();
 
-        if (digitalRead(botonSelect) == LOW) {
-            delay(300); 
-            reset_game();
-        }
-        return;
-    }
-
-    display.clearDisplay();
-
-    buttons_read();
-    body();           
-    direcciones();    
-    space_limits();
-    lose_conditions();
-    print_snake();
-    check_food();
-
-    display.display();
-    delay(120);
-
+  else if(ACTUAL_STATE == states::START){
+      
+      display.clearDisplay();
+      buttons_read();
+      
+      body();
+      direcciones();
+      space_limits();
+      lose_conditions();
+      print_snake();
+      check_food();
+      display.display();
+      delay(120);
+  
+  }
+  else if(ACTUAL_STATE == states::GAME_OVER){
+    
+    lose_display();
+      if (digitalRead(botonSelect) == LOW) {
+      delay(200);
+      reset_game();
+      }
+  }
 }
+
