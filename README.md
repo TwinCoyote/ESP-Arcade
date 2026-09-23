@@ -1,33 +1,66 @@
-# 🎮 Mini Consola Retro ESP32
+# 🎮 ESP-Arcade — Mini Consola Retro ESP32
 
 **Autor:** Ruben R  
-**Versión:** 0.1  
-**Plataforma:** ESP32 (DOIT ESP32 DEVKIT V1)  
+**Versión:** 0.2  
+**Plataforma (prototipo):** ESP32 (DOIT ESP32 DEVKIT V1)  
+**Plataforma (PCB):** ESP32-S3-WROOM-1  
 **Framework:** Arduino (PlatformIO)
 
 ---
 
 ## 🧠 Descripción general
 
-Proyecto personal de una **mini consola retro** basada en un **ESP32**, diseñada para correr juegos sencillos (como _Snake_, _Pong_ o _Tetris_) en una **pantalla OLED**.  
+Proyecto personal de una **mini consola retro** basada en un **ESP32**, diseñada para correr juegos sencillos en una **pantalla OLED**.  
 El objetivo es aprender sobre **sistemas embebidos**, **hardware modular** y **arquitectura de software para juegos en microcontroladores**.
 
-La idea final es integrar todos los componentes en una PCB personalizada con **componentes SMD** y una **carcasa impresa en 3D**.
+El proyecto tiene dos partes:
+
+- **Firmware:** menú y juegos, hoy probado en un prototipo con ESP32 DevKit V1 en protoboard.
+- **Hardware:** una PCB propia de 4 capas con componentes SMD, pensada para una **carcasa impresa en 3D**.
 
 ---
 
 ## 🧩 Características principales
 
 - Pantalla OLED 128x64 (I²C)
-- Botones físicos de control (4 direccionales + 1 acción)
+- Botones físicos de control (4 direccionales + botones de acción)
 - Menú principal para seleccionar juegos
-- 3 juegos clásicos integrados
-- Sonido básico (buzzer o DAC del ESP32)
+- Juegos implementados: **Snake** y **Pong** (_Tetris_ planeado)
 - Diseño modular (cada juego en su propio archivo)
 
 ---
 
-## 🧰 Hardware y materiales
+## 🔌 PCB (en desarrollo)
+
+Diseño hecho en KiCad. Estado: **diseño casi terminado, aún sin fabricar**.
+
+|                Vista superior                |                Vista inferior                |
+| :------------------------------------------: | :------------------------------------------: |
+| ![PCB vista superior](./docs/images/pcb-top.png) | ![PCB vista inferior](./docs/images/pcb-bottom.png) |
+
+_Renders 3D generados con KiCad._
+
+**Resumen del diseño:**
+
+| Bloque           | Componente                                        |
+| ---------------- | ------------------------------------------------- |
+| Microcontrolador | ESP32-S3-WROOM-1                                  |
+| Alimentación     | USB-C con protección ESD (USBLC6-2SC6)            |
+| Batería          | Cargador LiPo BQ24070 y conector JST              |
+| Regulación       | TPS631000 (buck-boost)                            |
+| Audio            | Amplificador I²S MAX98357A                        |
+| Interfaz         | Header para OLED, botones SMD y LED de estado     |
+| Placa            | 4 capas (señal, alimentación, GND, señal)         |
+
+**Pendiente:**
+
+- Correr el DRC final y terminar el ruteo.
+- Adaptar el firmware al ESP32-S3 y a los pines reales de la PCB.
+- Publicar el esquema (PDF) y los archivos de fabricación.
+
+---
+
+## 🧰 Hardware y materiales (prototipo en protoboard)
 
 | Componente            | Descripción                | Cantidad | Notas                                      |
 | --------------------- | -------------------------- | -------- | ------------------------------------------ |
@@ -43,7 +76,7 @@ La idea final es integrar todos los componentes en una PCB personalizada con **c
 
 ---
 
-## ⚙️ Conexiones de pines (Pantalla)
+## ⚙️ Conexiones de pines del prototipo (Pantalla)
 
 | Componente | Pin ESP32 | Descripción     |
 | ---------- | --------- | --------------- |
@@ -56,7 +89,7 @@ La idea final es integrar todos los componentes en una PCB personalizada con **c
 
 ---
 
-## ⚙️ Conexiones de pines (Botones)
+## ⚙️ Conexiones de pines del prototipo (Botones)
 
 | Componente | Pin ESP32 | Descripción     |
 | ---------- | --------- | --------------- |
